@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- 組織名稱 -->
+  <groupId>ESUN Project</groupId>
+  <!-- 專案名稱 -->
+  <artifactId>web</artifactId>
+  <version>1</version>
+  <properties>
+    <!-- 編譯時的編碼 -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- 使用的 Java 版本 -->
+    <maven.compiler.source>25.0.2</maven.compiler.source>
+    <maven.compiler.target>25.0.2</maven.compiler.target>
+  </properties>
+</project>
