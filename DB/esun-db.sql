@@ -1,0 +1,1 @@
+DROP TABLE esun_social_media.user;

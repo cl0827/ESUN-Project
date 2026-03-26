@@ -23,6 +23,30 @@ onMounted(() => {
     fetchPosts();
   }
 });
+const createComment = async (post) => {
+  if (!post.newComment || !post.newComment.trim()) return alert('留言不能為空！');
+  
+  const targetUserId = currentUser.value?.userId || currentUser.value?.user_id;
+  
+  if (!targetUserId) {
+    alert('無法取得使用者 ID，請重新登入！');
+    logout();
+    return;
+  }
+
+  try {
+    await api.post('/comments', {
+      userId: targetUserId,
+      postId: post.postId,
+      content: post.newComment
+    });
+    
+    post.newComment = ''; // 清空留言輸入框
+    fetchPosts();         // 重新抓取文章以刷新留言列表
+  } catch (error) {
+    alert((error.response?.data || error.message));
+  }
+};
 
 //---登入與註冊邏輯---
 const handleAuth = async () => {
@@ -34,10 +58,10 @@ const handleAuth = async () => {
     
     if (isLoginMode.value) {
       //登入成功：後端會回傳完整的 user 物件
-      currentUser.value = res; 
+      currentUser.value = res.data || res; 
       isLoggedIn.value = true; //切換至動態牆畫面
       //把使用者資訊轉成字串存進瀏覽器
-      localStorage.setItem('user', JSON.stringify(res));
+      localStorage.setItem('user', JSON.stringify(currentUser.value));
       fetchPosts(); // 抓取所有文章
     } else {
       //註冊成功
@@ -67,8 +91,10 @@ const logout = () => {
 const fetchPosts = async () => {
   try {
     //呼叫PostController的 GET API
-    const res = await api.get('/posts');
-    posts.value = res.reverse(); //將最新的文章排在最前面
+    posts.value = res.map(post => ({
+      ...post,
+      newComment: '' 
+    })).reverse();
   } catch (error) {
     console.error("無法取得文章:", error);
   }
@@ -122,7 +148,7 @@ const formatDate = (dateString) => {
 
     <div v-else class="wall-container">
       <header class="wall-header">
-        <h2>歡迎回來，{{ currentUser?.userName }} </h2>
+        <h2>歡迎回來，{{ currentUser?.userName }} </h2> 
         <button @click="logout" class="btn-outline">登出</button>
       </header>
 
@@ -145,12 +171,30 @@ const formatDate = (dateString) => {
             <span class="author-name">{{ post.user?.userName || '未知使用者' }}</span>
             <span class="post-time">{{ formatDate(post.createdAt) }}</span>
           </div>
+
           <div class="post-content">{{ post.content }}</div>
+
+          <div class="comments-section" v-if="post.comments && post.comments.length > 0">
+            <div v-for="comment in post.comments" :key="comment.comment_id" class="comment-item">
+              <span class="comment-author">{{ comment.user?.userName || '未知' }}: </span>
+              <span class="comment-text">{{ comment.content }}</span>
+            </div>
+          </div>
+          
+          <div class="add-comment-section">
+            <input 
+              v-model="post.newComment" 
+              type="text" 
+              placeholder="留言..." 
+              @keyup.enter="createComment(post)"
+              class="comment-input"
+            />
+            <button @click="createComment(post)" class="btn-comment">送出</button>
+          </div>
+          </div>
         </div>
       </div>
     </div>
-
-  </div>
 </template>
 
 <style scoped>
@@ -179,6 +223,50 @@ const formatDate = (dateString) => {
 textarea { width: 100%; border: none; resize: none; font-size: 16px; outline: none; margin-bottom: 10px; box-sizing: border-box; }
 .post-actions { display: flex; justify-content: flex-end; border-top: 1px solid #eee; padding-top: 10px; }
 .post-actions button { width: auto; padding: 8px 20px; }
+
+/* 留言區塊樣式 */
+.comments-section {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+.comment-item {
+  font-size: 14px;
+  margin-bottom: 8px;
+  background-color: #f0f2f5;
+  padding: 8px 12px;
+  border-radius: 12px;
+  display: inline-block;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+.comment-author {
+  font-weight: bold;
+  color: #1c1e21;
+}
+.add-comment-section {
+  display: flex;
+  margin-top: 10px;
+  gap: 10px;
+}
+.comment-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  outline: none;
+}
+.btn-comment {
+  padding: 8px 15px;
+  background-color: #00a497;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.btn-comment:hover {
+  background-color: #008a7d;
+}
 
 /* 貼文卡片 */
 .post-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
