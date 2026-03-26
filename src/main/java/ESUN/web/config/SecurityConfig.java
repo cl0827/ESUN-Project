@@ -2,6 +2,7 @@ package ESUN.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +30,16 @@ public class SecurityConfig {
             // 關閉CSRF防護(前後端分離)
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 //把發文的API路徑加進允許通行
-                .requestMatchers("/api/users/register", "/api/users/login", "/api/posts/**").permitAll()
+                .requestMatchers(
+                        "/api/users/register", 
+                        "/api/users/login", 
+                        "/api/posts",       // 發文 API
+                        "/api/posts/**",    // 取得單一文章等 API
+                        "/api/comments",    // 留言 API (預留)
+                        "/api/comments/**"  // 留言 API (預留)
+                ).permitAll()
                 //其他沒有列出的路徑擋下來
                 .anyRequest().authenticated()
             );

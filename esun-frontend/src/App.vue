@@ -18,9 +18,13 @@ const newPostContent = ref(''); //新發文的內容
 onMounted(() => {
   const storedUser = localStorage.getItem('user');
   if (storedUser) {
-    currentUser.value = JSON.parse(storedUser);
-    isLoggedIn.value = true;
-    fetchPosts();
+    try {
+      currentUser.value = JSON.parse(storedUser);
+      isLoggedIn.value = true;
+      fetchPosts();
+    } catch (e) {
+      localStorage.removeItem('user');
+    }
   }
 });
 
@@ -63,29 +67,35 @@ const logout = () => {
 };
 
 // ---發文與動態牆邏輯---
-//抓取所有文章
 const fetchPosts = async () => {
   try {
-    //呼叫PostController的 GET API
     const res = await api.get('/posts');
-    posts.value = res.reverse(); //將最新的文章排在最前面
+    posts.value = res.reverse(); 
   } catch (error) {
     console.error("無法取得文章:", error);
   }
 };
 
-//發表新文章
 const createPost = async () => {
   if (!newPostContent.value.trim()) return alert('文章內容不能為空！');
   
+  // 準確抓取 userId
+  const targetUserId = currentUser.value?.userId || currentUser.value?.user_id;
+  
+  if (!targetUserId) {
+    alert('無法取得使用者 ID，請重新登入！');
+    logout();
+    return;
+  }
+
   try {
     await api.post('/posts', {
-      userId: currentUser.value.userId || currentUser.value.userId, //告訴後端是誰發文
+      userId: targetUserId,
       content: newPostContent.value
     });
     
-    newPostContent.value = ''; //清空發文框
-    fetchPosts(); //重新抓取文章列表，更新畫面
+    newPostContent.value = ''; 
+    fetchPosts(); 
   } catch (error) {
     alert((error.response?.data || error.message));
   }
