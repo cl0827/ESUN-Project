@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+
 @Data // Lombok 自動生成 Getter/Setter/ToString 等方法
 @Entity // 宣告這是一個 JPA 實體
 @Table(name = "User") // 對應資料庫中的 User 表格
