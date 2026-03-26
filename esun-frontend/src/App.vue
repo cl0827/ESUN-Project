@@ -87,7 +87,7 @@ const createPost = async () => {
     newPostContent.value = ''; //清空發文框
     fetchPosts(); //重新抓取文章列表，更新畫面
   } catch (error) {
-    alert('發文失敗：' + (error.response?.data || error.message));
+    alert((error.response?.data || error.message));
   }
 };
 

@@ -1,7 +1,6 @@
 package ESUN.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,8 +37,9 @@ public class UserController {
             // 呼叫 Service 的登入邏輯
             User user = userService.login(loginRequest.getPhone(), loginRequest.getPassword());
             return ResponseEntity.ok(user); 
+            
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 }
