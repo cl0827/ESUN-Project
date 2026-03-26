@@ -25,12 +25,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-        .csrf(csrf -> csrf.disable()) 
+        .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/**").permitAll() // 測試階段允許所有 /api 下的請求
-            .anyRequest().authenticated()
+            // 允許所有 OPTIONS 請求 (解決跨域預檢)
+            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+            // 允許所有 /api 開頭的路徑
+            .requestMatchers("/api/**", "/error").permitAll()
+            .anyRequest().permitAll() // 暫時改為全開，測試是否為權限問題
         );
         return http.build();
     }

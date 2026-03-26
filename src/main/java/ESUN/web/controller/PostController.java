@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ESUN.web.entity.Post;
 import ESUN.web.service.PostService;
 
-@CrossOrigin(origins = "http://localhost:5173") // 允許 Vue 前端跨域請求
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // 允許 Vue 前端跨域請求
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {

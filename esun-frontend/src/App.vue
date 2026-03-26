@@ -106,6 +106,7 @@ const fetchPosts = async () => {
     }
   } catch (error) {
     console.error("無法取得文章:", error);
+    posts.value = [];
   }
 };
 
