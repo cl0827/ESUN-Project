@@ -23,23 +23,33 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    // 1. 新增發文 (POST http://localhost:8080/api/posts)
+    //新增發文 (POST http://localhost:8080/api/posts)
     @PostMapping
-    public ResponseEntity<?> createPost(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> createPost(@RequestBody Map<String, Object> request) {
         try {
-            // 從前端傳來的 JSON 中取得 userId 與 content
-            // 實務上通常會用 DTO 物件來接，這裡為了快速測試先用 Map
-            Integer userId = Integer.parseInt(request.get("userId"));
-            String content = request.get("content");
+            //從前端傳來的 JSON 中取得 userId 與 content
+            //通常會用 DTO 物件來接，這裡為了快速測試先用 Map
+            Object userIdObj = request.get("userId");
+            if (userIdObj == null) {
+                userIdObj = request.get("user_id");
+            }
+
+            if (userIdObj == null) {
+                return ResponseEntity.badRequest().body("發文失敗：無法取得發文者的 ID，請重新登入！");
+            }
+
+            //轉型
+            Integer userId = Integer.parseInt(userIdObj.toString());
+            String content = request.get("content").toString();
             
-            Post post = postService.createPost(userId, content);
+            postService.createPost(userId, content);
             return ResponseEntity.ok("發文成功！");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("發文失敗：" + e.getMessage());
         }
     }
 
-    // 2. 取得所有文章 (GET http://localhost:8080/api/posts)
+    //取得所有文章 (GET http://localhost:8080/api/posts)
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
         List<Post> posts = postService.getAllPosts();

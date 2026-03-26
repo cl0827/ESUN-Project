@@ -14,6 +14,16 @@ const currentUser = ref(null); //儲存當前登入的使用者資訊
 const posts = ref([]); //儲存所有文章
 const newPostContent = ref(''); //新發文的內容
 
+//---網頁載入時自動檢查登入狀態---
+onMounted(() => {
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    currentUser.value = JSON.parse(storedUser);
+    isLoggedIn.value = true;
+    fetchPosts();
+  }
+});
+
 //---登入與註冊邏輯---
 const handleAuth = async () => {
   if (!formData.value.phone || !formData.value.password) return alert('請填寫完整資訊');
@@ -26,6 +36,8 @@ const handleAuth = async () => {
       //登入成功：後端會回傳完整的 user 物件
       currentUser.value = res; 
       isLoggedIn.value = true; //切換至動態牆畫面
+      //把使用者資訊轉成字串存進瀏覽器
+      localStorage.setItem('user', JSON.stringify(res));
       fetchPosts(); // 抓取所有文章
     } else {
       //註冊成功
@@ -46,6 +58,8 @@ const logout = () => {
   formData.value.password = '';
   authMessage.value = '已成功登出';
   isAuthError.value = false;
+  //登出時清空瀏覽器暫存
+  localStorage.removeItem('user');
 };
 
 // ---發文與動態牆邏輯---
@@ -66,7 +80,7 @@ const createPost = async () => {
   
   try {
     await api.post('/posts', {
-      userId: currentUser.value.userId, //告訴後端是誰發文
+      userId: currentUser.value.userId || currentUser.value.userId, //告訴後端是誰發文
       content: newPostContent.value
     });
     
@@ -108,7 +122,7 @@ const formatDate = (dateString) => {
 
     <div v-else class="wall-container">
       <header class="wall-header">
-        <h2>歡迎回來，{{ currentUser?.userName }} 👋</h2>
+        <h2>歡迎回來，{{ currentUser?.userName }} </h2>
         <button @click="logout" class="btn-outline">登出</button>
       </header>
 
