@@ -94,9 +94,16 @@ const logout = () => {
 const fetchPosts = async () => {
   try {
     const res = await api.get('/posts');
-    // 確保對 res.data 進行反轉，並先檢查是否為陣列
-    const data = Array.isArray(res.data) ? res.data : res; 
-    posts.value = data.reverse(); 
+    // 檢查 res 是否為陣列。如果是 Axios 原生回應，則取 res.data
+    const data = Array.isArray(res) ? res : (res.data && Array.isArray(res.data) ? res.data : null);
+    
+    if (data) {
+      // 使用 [...data] 複製一份再反轉，避免直接更動原始狀態
+      posts.value = [...data].reverse(); 
+    } else {
+      posts.value = [];
+      console.warn("API 回傳的不是陣列格式:", res);
+    }
   } catch (error) {
     console.error("無法取得文章:", error);
   }
