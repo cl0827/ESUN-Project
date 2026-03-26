@@ -93,16 +93,10 @@ const logout = () => {
 // ---發文與動態牆邏輯---
 const fetchPosts = async () => {
   try {
-<<<<<<< HEAD
     const res = await api.get('/posts');
-    posts.value = res.reverse(); 
-=======
-    //呼叫PostController的 GET API
-    posts.value = res.map(post => ({
-      ...post,
-      newComment: '' 
-    })).reverse();
->>>>>>> b2
+    // 確保對 res.data 進行反轉，並先檢查是否為陣列
+    const data = Array.isArray(res.data) ? res.data : res; 
+    posts.value = data.reverse(); 
   } catch (error) {
     console.error("無法取得文章:", error);
   }
